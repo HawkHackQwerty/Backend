@@ -1,0 +1,22 @@
+services:
+  python:
+    build:
+      context: .
+      dockerfile: build/python.Dockerfile
+    container_name: python
+    command: bash -c "python3 sampleZMQ.py"
+    ports:
+      - "5555:5555"
+    restart: on-failure
+
+  golang:
+    build:
+      context: .
+      dockerfile: build/go.Dockerfile
+    container_name: golang
+    command: bash -c "go test ./..."
+    depends_on:
+      - python
+    environment:
+      - ZMQ_SERVER_ADDR=tcp://python:5555
+    restart: on-failure
