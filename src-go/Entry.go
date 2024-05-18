@@ -1,29 +1,31 @@
 package main
 
 import (
-	"fmt"
-	"github.com/pebbe/zmq4"
-	"time"
+	"Mesh_Mesh/Endpoints"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	context, _ := zmq4.NewContext()
-	defer context.Term()
+	router, zmqHandler := Endpoints.HandleServer()
 
-	// Function to handle sending and receiving messages
 	go func() {
-		socket, _ := context.NewSocket(zmq4.REQ)
-		defer socket.Close()
-		socket.Connect("tcp://localhost:5555")
-
-		for i := 0; i < 10; i++ {
-			msg := fmt.Sprintf("Hello %d", i)
-			socket.Send(msg, 0)
-			reply, _ := socket.Recv(0)
-			fmt.Println("Received", reply)
-			time.Sleep(1 * time.Second)
+		// Listening on port 8080
+		if err := router.Run(":8080"); err != nil {
+			log.Fatalf("Failed to run server: %v", err)
 		}
 	}()
 
-	time.Sleep(15 * time.Second)
+	// Graceful Shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Shutting down server...")
+
+	// Cleanup resources
+	Endpoints.CloseServer(router, zmqHandler)
+	log.Println("Server gracefully stopped")
 }
