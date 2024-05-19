@@ -89,7 +89,7 @@ def handler_job(message, port):
 def rep_socket(port, handler):
     context = zmq.Context()
     socket = context.socket(zmq.REP)
-    socket.bind(f"tcp://python:{port}")
+    socket.bind(f"tcp://*:{port}")
 
     while True:
         message = socket.recv_string()

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Mesh_Mesh/Endpoints"
+	"Mesh_Mesh/API"
 	"log"
 	"os"
 	"os/signal"
@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	router, zmqHandler := Endpoints.HandleServer()
+	router, zmqHandler := API.HandleServer()
 
 	go func() {
 		// Listening on port 8080
@@ -26,6 +26,6 @@ func main() {
 	log.Println("Shutting down server...")
 
 	// Cleanup resources
-	Endpoints.CloseServer(router, zmqHandler)
+	API.CloseServer(router, zmqHandler)
 	log.Println("Server gracefully stopped")
 }
