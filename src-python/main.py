@@ -3,6 +3,8 @@ import threading
 from io import BytesIO
 import json
 
+from cohere_func import *
+
 def handler_resume(message, port):
     try:
         data = json.loads(message)
@@ -69,10 +71,10 @@ def handler_video(message, port):
 def handler_job(message, port):
     try:
         data = json.loads(message)
-        string_one = data['stringOne']
-        string_two = data['stringTwo']
+        job_title = data['stringOne']
+        job_desc = data['stringTwo']
         user_id = data['userID']
-        print(f"Received on port {port}: stringOne={string_one}, stringTwo={string_two}")
+        print(f"Received on port {port}: stringOne={job_title}, stringTwo={job_desc}")
 
         response_message = "Job info processed successfully"
         return [response_message]
@@ -87,7 +89,7 @@ def handler_job(message, port):
 def rep_socket(port, handler):
     context = zmq.Context()
     socket = context.socket(zmq.REP)
-    socket.bind(f"tcp://*:{port}")
+    socket.bind(f"tcp://python:{port}")
 
     while True:
         message = socket.recv_string()
