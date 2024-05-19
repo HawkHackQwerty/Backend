@@ -4,7 +4,7 @@ from resume import fahmi_resume, krish_resume
 import cohere 
 
 #put in .env file meow
-co = cohere.Client("client")
+co = cohere.Client("XFu4fyItgDdKjCf3CUUNZTjGytnn0ccEMX2C3anq")
 
 def get_reply(prompt: str, history: list) -> str:
 
