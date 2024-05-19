@@ -28,7 +28,7 @@ def preset_for_resume(history: list):
 
 def get_resume_feedback(job_desc, resume, history):
     preset_for_resume(history)
-    return get_reply("here is the resume you are reviewing,: {}, and here is the job it is for {}".format(resume, job_desc)).split('|')
+    return get_reply("here is the resume you are reviewing,: {}, and here is the job it is for {}",format(resume, job_desc)).split('|')
 
 def get_new_cv(job_desc, job_title, cv, history):
     return get_reply("Thanks, now take that information from their resume, use this job description: {}, and this job title {}, and edit this cover letter that is from the user: {}. ONLY CHANGE WHAT IS INSIDE THE CURLY BRACKETS { }, EVERYTHING ELSE THEY WANT TO KEEP THE SAME!! ONLY RETURN THE ACTUAL LETTER, DO NOT ADD ON ANY EXTRA DESCRIPTION OR ANYTHING".format(job_desc, job_title, cv), history)

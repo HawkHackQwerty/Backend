@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func HandleServer() (*gin.Engine, *zmq4.Socket) {
+func HandleServer() (*gin.Engine, []*zmq4.Socket) {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
@@ -25,30 +25,39 @@ func HandleServer() (*gin.Engine, *zmq4.Socket) {
 	r.Use(authMiddleware())
 	r.Use(userIDMiddleware())
 
-	ZMQHandler, err := ZeroMQ.HandleConnection()
+	OpenPorts := []string{"5550", "5551", "5552", "5553"}
+	reqSockets, err := ZeroMQ.InitReqSockets(OpenPorts)
 	if err != nil {
-		log.Fatal("Failed to connect ZeroMQ:", err)
+		log.Fatalf("Failed to establish ZeroMQ REQ sockets: %v", err)
 	}
 
 	r.GET("/processResume", func(a *gin.Context) {
-		Endpoints.ResumeProcess(a, ZMQHandler)
+		Endpoints.ResumeProcess(a, reqSockets[0])
 	})
 	r.GET("/processCover", func(a *gin.Context) {
-		Endpoints.CoverLetterProcess(a, ZMQHandler)
+		Endpoints.CoverLetterProcess(a, reqSockets[1])
 	})
 	r.GET("/processVideo", func(a *gin.Context) {
-		Endpoints.VideoProcess(a, ZMQHandler)
+		Endpoints.VideoProcess(a, reqSockets[2])
 	})
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
 	})
 
-	return r, ZMQHandler
+	r.POST("/uploadJob", func(c *gin.Context) {
+		Endpoints.JobInfoProcess(c, reqSockets[3])
+	})
+
+	return r, reqSockets
 }
 
-func CloseServer(a *gin.Engine, c *zmq4.Socket) {
+func CloseServer(a *gin.Engine, c []*zmq4.Socket) {
 	a = nil
-	ZeroMQ.CloseConnection(c)
+	defer func() {
+		for _, socket := range c {
+			socket.Close()
+		}
+	}()
 	c = nil
 }

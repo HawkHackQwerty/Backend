@@ -2,7 +2,6 @@ package Endpoints
 
 import (
 	"bytes"
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/pebbe/zmq4"
 	"io"
@@ -45,28 +44,12 @@ func VideoProcess(c *gin.Context, socket *zmq4.Socket) {
 		return
 	}
 
-	// Receive and process a reply from the server
+	// Receive the response from Python and return it in the HTTP response
 	reply, err := socket.RecvBytes(0)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to receive reply from ZeroMQ: " + err.Error(),
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to receive reply from ZeroMQ: " + err.Error()})
 		return
 	}
 
-	// Assuming reply is a JSON with three strings (this needs to be parsed accordingly)
-	var response struct {
-		MessageOne string `json:"messageOne"`
-	}
-	if err := json.Unmarshal(reply, &response); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to parse server reply: " + err.Error(),
-		})
-		return
-	}
-
-	// Return the three strings as a JSON response
-	c.JSON(http.StatusOK, gin.H{
-		"messageOne": response.MessageOne,
-	})
+	c.String(http.StatusOK, string(reply))
 }
