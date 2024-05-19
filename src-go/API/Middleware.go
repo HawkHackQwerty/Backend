@@ -1,4 +1,4 @@
-package Endpoints
+package API
 
 import (
 	"fmt"

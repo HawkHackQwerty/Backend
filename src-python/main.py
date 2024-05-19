@@ -71,6 +71,7 @@ def handler_job(message, port):
         data = json.loads(message)
         string_one = data['stringOne']
         string_two = data['stringTwo']
+        user_id = data['userID']
         print(f"Received on port {port}: stringOne={string_one}, stringTwo={string_two}")
 
         response_message = "Job info processed successfully"
