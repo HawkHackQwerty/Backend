@@ -1,0 +1,18 @@
+{
+  "name": "simulated_frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node Test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.2",
+    "axios": "^1.6.8",
+    "form-data": "^4.0.0"
+  }
+}
