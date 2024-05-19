@@ -4,6 +4,17 @@ from io import BytesIO
 import json
 
 from cohere_func import *
+import PyPDF2
+from resume_scraper import extract_text_from_pdf
+from cover_scraper import extract_text_from_cover
+from interview import interview_reply
+
+# chat history for the chatbot
+chat_history = []
+job_title = ""
+job_desc = ""
+Question = ""
+
 
 def handler_resume(message, port):
     try:
@@ -13,8 +24,23 @@ def handler_resume(message, port):
         print(f"Received resume file from user {user_id} on port {port}")
 
         # # Use PyPDF2 to read the PDF from BytesIO
-        # pdf_reader = PdfReader(file_data)
-        # number_of_pages = len(pdf_reader.pages)
+        pdf_reader = PyPDF2.PdfReader(file_data)
+        number_of_pages = len(pdf_reader.pages)
+
+        output_pdf_path = 'uploaded_resume.pdf'
+
+        with open(output_pdf_path, 'wb') as output_file:
+            output_file.write(data['fileData'])
+
+        preset_for_resume(chat_history)
+
+        resume = extract_text_from_pdf(output_pdf_path)
+
+        Feedback, Score = get_resume_feedback(job_desc, resume, chat_history)
+
+        Question = get_reply("Now that you know what their resume looks like, make an interview question for them based on their resume, ONLY RETURN THE QUESTION NO EXCESS WORDS!", chat_history)
+
+        
         # print(f"Received resume file from user {user_id} on port {port}, Number of pages: {number_of_pages}")
 
         # Example processing: Just read the text from the first page
@@ -22,19 +48,16 @@ def handler_resume(message, port):
         # response_part1 = f"Resume processed for user {user_id}, first page text: {first_page_text[:100]}..
 
         # Process resume
-        response_part1 = f"Resume processed for user {user_id}"
-        response_part2 = "Verification Complete"
-        response_part3 = "Ready for next step"
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON on port {port}: {e}")
-        response_part1, response_part2, response_part3 = "Failed to decode JSON", "", ""
+        Feedback, Score, Question = "Failed to decode JSON", "", ""
     except KeyError as e:
         print(f"Missing key in data on port {port}: {e}")
-        response_part1, response_part2, response_part3 = "Data is missing keys", "", ""
+        Feedback, Score, Question = "Data is missing keys", "", ""
 
     # Return three strings as a multipart response
-    return [response_part1, response_part2, response_part3]
+    return [Feedback, Score, Question]
 
 def handler_cover(message, port):
     try:
@@ -43,9 +66,19 @@ def handler_cover(message, port):
         file_data = BytesIO(data['fileData'])
         print(f"Received file from user {user_id} on port {port}")
 
-        # Placeholder for processing the PDF
-        response_message = "PDF processing completed successfully"
-        return [response_message]
+        pdf_reader = PyPDF2.PdfReader(file_data)
+        number_of_pages = len(pdf_reader.pages)
+
+        output_pdf_path = 'uploaded_resume.pdf'
+
+        with open(output_pdf_path, 'wb') as output_file:
+            output_file.write(data['fileData'])
+
+        cover = extract_text_from_cover(output_pdf_path)
+
+        new_cover = get_new_cv(job_desc, job_title, cover, chat_history)
+
+        return [new_cover]
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON on port {port}: {e}")
@@ -63,10 +96,16 @@ def handler_video(message, port):
         with open(video_filename, 'wb') as video_file:
             video_file.write(video_data.getvalue())
         print(f"Saved video to {video_filename}, size {len(video_data.getvalue())} bytes")
-        return ["Video saved successfully"]
+
+        Video_feedback = interview_reply(video_filename, Question, chat_history)
+
+        return [Video_feedback]
+    
     except Exception as e:
         print(f"Error processing video on port {port}: {e}")
         return ["Failed to process video"]
+
+
 
 def handler_job(message, port):
     try:
@@ -89,7 +128,7 @@ def handler_job(message, port):
 def rep_socket(port, handler):
     context = zmq.Context()
     socket = context.socket(zmq.REP)
-    socket.bind(f"tcp://python:{port}")
+    socket.bind(f"tcp://*:{port}")
 
     while True:
         message = socket.recv_string()

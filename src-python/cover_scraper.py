@@ -1,6 +1,6 @@
 import pypdf
 
-def extract_text_from_pdf(pdf_path):
+def extract_text_from_cover(pdf_path):
     with open(pdf_path, 'rb') as file:
         pdf_reader = pypdf.PdfReader(file)
         num_pages = len(pdf_reader.pages)
@@ -11,13 +11,11 @@ def extract_text_from_pdf(pdf_path):
             page_text = page.extract_text()
             extracted_text += page_text
 
-    return extracted_text
+    cover_text = ""
+    for char in extracted_text:
+        if char == '\n':
+            cover_text += ' '
+        else:
+            cover_text += char
 
-pdf_path = 'cover-letter.pdf'
-text = extract_text_from_pdf(pdf_path)
-cover_text = ""
-for char in text:
-    if char == '\n':
-        cover_text += ' '
-    else:
-        cover_text += char
+    return cover_text

@@ -12,7 +12,3 @@ def extract_text_from_pdf(pdf_path):
             extracted_text += page_text
 
     return extracted_text
-
-pdf_path = 'resume.pdf'
-resume_text = extract_text_from_pdf(pdf_path)
-print(resume_text)

@@ -1,4 +1,4 @@
-from gemeni import get_reply
+from cohere_func import get_reply
 import moviepy.editor as mp
 import speech_recognition as sr
 
@@ -15,16 +15,14 @@ def audio_to_text(filename):
     except Exception as e:
         print("Exception: "+str(e))
 
+def interview_reply(filename, question, history):
+    # get the video from frontend
+    clip = mp.VideoFileClip(filename)
 
-# get the video from frontend
-clip = mp.VideoFileClip(video_name)
+    audio = clip.audio
 
-audio = clip.audio
+    audio.write_audiofile("interview.wav")
 
-audio.write_audiofile("interview.wav")
+    interview_audio_text = audio_to_text("interview.wav")
 
-interview_audio_text = audio_to_text("interview.wav")
-
-# cohere call, get the 
-history = []
-interview_feedback = get_reply(prompt="Here is someone who did a video interview question and answered it, I transcribed the text for you, give them feedback on how they can answer the questions better: Their questionw was: {}, and their response was: {}, give them that feedback!".format(question, interview_audio_text), history=history)
+    return get_reply(prompt="Here is someone who did a video interview question and answered it, I transcribed the text for you, give them feedback on how they can answer the questions better: Their questionw was: {}, and their response was: {}, give them that feedback!".format(question, interview_audio_text), history=history)
